@@ -1,108 +1,106 @@
-# Kế hoạch deploy lên Railway
+# Deploy lên Railway
 
-Mục tiêu: đưa web demo nhận diện cây dược liệu lên một URL công khai để trình diễn.
+**Bản demo đang chạy:** https://web-production-68ba3.up.railway.app
+
+| Thành phần | Giá trị |
+|---|---|
+| Workspace / gói | haha Hehe's Projects — Railway **Pro** |
+| Project | `medicinal-plant` (`bfbff7ea-5330-48e6-9d22-ddf5885885d9`) |
+| Environment | `production` |
+| Service | `web` — nguồn GitHub `VanTrietTRAN/MedicinalPlant`, nhánh `main` |
+| Region | Singapore (`asia-southeast1-eqsg3a`), 1 replica |
+| Build | `Dockerfile` (PyTorch CPU + tải trọng số từ Git LFS, kiểm tra sha256) |
+| Cổng | `PORT=8080`, domain trỏ vào 8080 |
+| Healthcheck | `GET /`, timeout 300s |
+| Cấu hình hạ tầng | [.railway/railway.ts](.railway/railway.ts) (Infrastructure as Code) |
 
 ## 1. Kiến trúc
 
 ```
-GitHub: VanTrietTRAN/MedicinalPlant (nhánh main)
-  ├─ mã nguồn app + Dockerfile + railway.json
-  └─ weights/*.safetensors (Git LFS, ~397MB)
-          │  git push  → Railway tự build lại
-          ▼
+git push (nhánh main)
+   │   chỉ build lại khi đổi: app.py, medplant/, assets/, data/, examples/,
+   │   weights/, scripts/, requirements.txt, Dockerfile, .railway/
+   ▼
 Railway build (Dockerfile)
-  1. python:3.12-slim + PyTorch CPU
-  2. pip install -r requirements.txt
-  3. scripts/download_weights.py  → tải 3 file trọng số, kiểm tra sha256
-  4. COPY mã nguồn
-          ▼
-Railway container: python app.py  → Gradio lắng nghe 0.0.0.0:$PORT
-          ▼
-Domain công khai: https://<tên-service>.up.railway.app
+   1. python:3.12-slim + PyTorch CPU 2.13
+   2. pip install -r requirements.txt
+   3. scripts/download_weights.py → tải 3 file .safetensors (~397MB) từ
+      media.githubusercontent.com (Git LFS), kiểm tra sha256 theo weights/manifest.json
+   4. COPY mã nguồn → chạy bằng user không phải root
+   ▼
+Container (Singapore): python app.py → Gradio 0.0.0.0:8080
+   ▼
+https://web-production-68ba3.up.railway.app
 ```
 
-Vì sao tải trọng số lúc build: GitHub giới hạn 100MB/file nên trọng số nằm trong Git LFS, còn mã nguồn
-Railway kéo về chỉ chứa file "con trỏ" LFS. Script tải file thật từ `media.githubusercontent.com`
-và kiểm tra sha256 theo `weights/manifest.json`, nên build hỏng ngay nếu file sai.
+Vì sao tải trọng số lúc build: GitHub giới hạn 100MB/file nên trọng số nằm trong Git LFS, mà mã nguồn
+Railway kéo về chỉ chứa file "con trỏ" LFS. `.dockerignore` loại các file con trỏ này để chúng không ghi đè
+lên file thật đã tải.
 
-## 2. Yêu cầu tài nguyên
+## 2. Số liệu thực tế trên Railway
 
-| Cấu hình `ENABLED_MODELS` | RAM khi chạy (đo thực tế) | Gợi ý |
-|---|---|---|
-| `convnext,swin,resnet50` (mặc định) | ~1,4GB | Cấp ≥ 2GB RAM |
-| `convnext,swin` | ~1,1GB | Giữ nguyên độ chính xác 93,21% |
-| `convnext` | ~0,6GB | Dùng khi gói Railway giới hạn RAM thấp |
+- Khởi động: nạp 3 mô hình ~20s, warm-up + Gradio sẵn sàng sau ~45s.
+- RAM: ~1,4GB với 3 mô hình. Gói Pro dư sức chứa.
+- Suy luận: ~0,5s/ảnh trên CPU 12 luồng của máy local; trên Railway xem mục "Thời gian suy luận" ngay dưới kết quả.
 
-- Image Docker ~1,5GB (PyTorch CPU + Gradio + trọng số).
-- Thời gian suy luận: ~0,5s/ảnh cho cả 3 mô hình trên CPU 12 luồng; trên vCPU của Railway dự kiến 1–3s.
-- Gói Trial của Railway có thể không đủ RAM cho cả 3 mô hình; nên dùng gói Hobby. Hãy kiểm tra
-  hạn mức hiện tại tại https://railway.com/pricing.
+## 3. Cập nhật bản demo
 
-## 3. Các bước deploy
-
-### Bước 1 — Mã nguồn trên GitHub (đã thực hiện)
-Repo `https://github.com/VanTrietTRAN/MedicinalPlant` đã có toàn bộ mã nguồn và trọng số LFS.
-Kiểm tra trên GitHub: mở `weights/convnext_base.safetensors` phải thấy nhãn **"Stored with Git LFS"**.
-
-### Bước 2 — Tạo project trên Railway
-1. Đăng nhập https://railway.com bằng tài khoản GitHub.
-2. **New Project → Deploy from GitHub repo** → cấp quyền cho Railway đọc repo → chọn `VanTrietTRAN/MedicinalPlant`.
-3. Railway đọc `railway.json` và build bằng `Dockerfile` (không cần cấu hình build/start command).
-
-### Bước 3 — Biến môi trường (tuỳ chọn)
-Tab **Variables** của service. Không bắt buộc đặt gì; chỉ đặt khi cần thay đổi mặc định:
-
-| Biến | Khi nào dùng |
-|---|---|
-| `ENABLED_MODELS=convnext,swin` | Muốn giảm RAM (xem bảng mục 2) |
-| `TORCH_THREADS=2` | Đặt bằng số vCPU được cấp nếu thấy CPU bị tranh chấp |
-| `WEIGHTS_BASE_URL=...` | Chuyển nguồn trọng số sang GitHub Release (xem mục 5) |
-
-Không đặt `PORT` — Railway tự cấp và app tự đọc.
-
-### Bước 4 — Mở domain công khai
-Tab **Settings → Networking → Generate Domain**. Nếu Railway hỏi cổng, chọn cổng mà Railway gợi ý
-(chính là `$PORT` app đang lắng nghe; xem dòng `Running on local URL: http://0.0.0.0:<port>` trong Deploy Logs).
-
-### Bước 5 — Kiểm tra
-1. **Build Logs**: thấy `[tải] convnext_base.safetensors ...` rồi `[ok]` cho cả 3 file.
-2. **Deploy Logs**: thấy `Đã nạp ConvNeXt-Base`, `Đã nạp Swin-Base`, `Đã nạp ResNet50 (custom)`, rồi
-   `Running on local URL`. Healthcheck `/` (timeout 300s) chuyển sang xanh.
-3. Mở domain, tải một ảnh lá cây (vd. *Ginkgo biloba*) → bấm **Dự đoán** → có kết luận và 3 thẻ mô hình.
-4. Dán thử một link ảnh → ảnh hiện lên ô bên trái, kết quả hiện bên phải.
-
-## 4. Cập nhật về sau
+Sửa code → commit → push là Railway tự build và deploy lại (không có downtime: bản cũ chạy đến khi
+bản mới qua healthcheck):
 
 ```bash
 git add -A && git commit -m "..." && git push
 ```
-Railway tự build lại khi file trong `watchPatterns` của `railway.json` thay đổi (mã app, trọng số,
-Dockerfile...). Sửa `research/` hay tài liệu sẽ **không** kích hoạt build.
 
-Thay trọng số mới: đặt file `.pth` vào một thư mục rồi chạy
-`python scripts/convert_weights.py --src <thư mục>` (sinh lại `.safetensors` + `manifest.json`), commit, push.
+- **Thay trọng số:** `python scripts/convert_weights.py --src <thư mục chứa .pth>` → commit → push.
+- **Thêm ảnh mẫu:** chép ảnh `.jpg/.png` (có quyền chia sẻ) vào `examples/` → commit → push.
+- **Đổi biến môi trường** (`ENABLED_MODELS`, `TOP_K`, ...): thêm vào `env` trong `.railway/railway.ts`
+  rồi chạy `railway config apply` (xem mục 4), hoặc sửa trong Dashboard → service `web` → Variables.
 
-Thêm ảnh mẫu: chép ảnh `.jpg/.png` (có quyền chia sẻ) vào `examples/`, commit, push.
+## 4. Quản lý hạ tầng bằng CLI
+
+Cài một lần: `npm i -g @railway/cli`, `npm install` (trong repo), `railway login`, `railway link`
+(chọn project `medicinal-plant`, service `web`).
+
+| Việc | Lệnh |
+|---|---|
+| Xem trạng thái | `railway status` |
+| Log build / log chạy | `railway logs --build` / `railway logs` |
+| Danh sách deployment | `railway deployment list` |
+| Xem trước thay đổi cấu hình | `railway config plan` |
+| Áp dụng cấu hình | `railway config apply` |
+| Deploy lại bản hiện tại | `railway redeploy` |
+| Mở dashboard | `railway open` |
+
+> **Windows + Git Bash:** `railway config plan/apply` báo nhầm "requires Railway CLI 5.42.1 or newer"
+> vì SDK đọc biến `$_` của Git Bash. Hãy chạy trong PowerShell:
+> `$env:_ = "$(npm root -g)\@railway\cli\bin\railway.exe"; railway config plan`
+
+> **Region:** IaC engine hiện chưa nhận ra thay đổi region khi số replica không đổi, nên region được đặt
+> thêm bằng API (`serviceInstanceUpdate.multiRegionConfig`). Nếu muốn đổi region, hãy đổi trong
+> Dashboard → service `web` → Settings → Regions, rồi sửa `replicas` trong `.railway/railway.ts` cho khớp.
 
 ## 5. Xử lý sự cố
 
 | Triệu chứng | Nguyên nhân | Cách xử lý |
 |---|---|---|
-| Build lỗi `HTTP Error 404` / `sha256 không khớp` khi tải trọng số | File LFS chưa được push, hoặc hết hạn mức băng thông Git LFS của GitHub (mỗi lần build tải ~400MB) | Kiểm tra mục 3/Bước 1. Hoặc chuyển sang GitHub Release: tạo release tag `weights-v1`, upload 3 file `.safetensors`, đặt `WEIGHTS_BASE_URL=https://github.com/VanTrietTRAN/MedicinalPlant/releases/download/weights-v1` rồi Redeploy |
-| Container bị kill, log `Out of memory` / exit 137 | Thiếu RAM | Tăng giới hạn RAM của service hoặc đặt `ENABLED_MODELS=convnext,swin` |
-| Healthcheck thất bại | App chưa nạp xong mô hình trong 300s, hoặc lỗi lúc khởi động | Xem Deploy Logs; tăng `healthcheckTimeout` trong `railway.json` |
-| Dự đoán chậm (>5s) | vCPU ít/bị chia sẻ | Đặt `TORCH_THREADS` bằng số vCPU; bớt mô hình |
-| "Không tải được ảnh từ link" | Link không phải ảnh trực tiếp, trang chặn bot, hoặc ảnh > 15MB | Dùng link ảnh trực tiếp (đuôi .jpg/.png) hoặc tải ảnh lên |
+| Build lỗi `HTTP Error 404` / `sha256 không khớp` khi tải trọng số | File LFS chưa push, hoặc hết hạn mức băng thông Git LFS của GitHub (mỗi lần build tải ~400MB, Docker cache giúp bỏ qua khi `manifest.json` không đổi) | Tạo GitHub Release tag `weights-v1`, upload 3 file `.safetensors`, đặt biến `WEIGHTS_BASE_URL=https://github.com/VanTrietTRAN/MedicinalPlant/releases/download/weights-v1`, rồi `railway redeploy` |
+| Container bị kill, exit 137 | Thiếu RAM | Đặt `ENABLED_MODELS=convnext,swin` (~1,1GB, vẫn 93,21%) |
+| Healthcheck thất bại | Chưa nạp xong mô hình trong 300s, hoặc lỗi khởi động | `railway logs`; tăng `healthcheckTimeout` trong `.railway/railway.ts` |
+| 502 khi mở domain | Cổng domain ≠ cổng app | Domain phải trỏ 8080 và biến `PORT=8080` (đã cố định trong IaC) |
+| "Không tải được ảnh từ link" | Link không phải ảnh trực tiếp, trang chặn bot, ảnh > 15MB | Dùng link ảnh trực tiếp hoặc tải ảnh lên |
 
-## 6. Chi phí cho demo
+## 6. Chi phí
 
-- Railway tính theo RAM/CPU sử dụng theo thời gian. Ngoài buổi demo có thể bật **App Sleeping**
-  (Settings → Serverless) để service ngủ khi không có truy cập; lần truy cập đầu sẽ chờ ~20–40s để nạp mô hình.
-- Hoặc tạm dừng bằng **Remove deployment** sau buổi demo; khi cần chỉ việc **Redeploy**.
+Gói Pro tính theo RAM/CPU dùng thực tế; service chạy liên tục với ~1,4GB RAM. Ngoài thời gian demo có thể:
+- Bật **App Sleeping** (đặt `sleepApplication: true` trong `deploy` của `.railway/railway.ts` → `railway config apply`):
+  service ngủ khi không có truy cập, lần mở đầu tiên chờ ~45–60s.
+- Hoặc tạm gỡ bằng `railway down`, khi cần thì `railway redeploy`.
 
 ## 7. Checklist trước buổi demo
 
-- [ ] Build và deploy xanh, domain mở được
-- [ ] Thử 3–5 ảnh thật của các loài trong danh sách `data/class_names.json`
-- [ ] Thử trên điện thoại (giao diện mobile, chụp ảnh bằng webcam)
-- [ ] Tắt App Sleeping trong buổi demo để tránh chờ khởi động
+- [x] Build và deploy xanh, domain mở được
+- [x] Dự đoán qua link ảnh và tải ảnh lên trên bản deploy
+- [ ] Thử 3–5 ảnh thật của các loài trong `data/class_names.json`
+- [ ] Thử trên điện thoại (giao diện mobile, chụp ảnh bằng camera)
+- [ ] Nếu đã bật App Sleeping: tắt đi hoặc mở trang trước buổi demo 1–2 phút

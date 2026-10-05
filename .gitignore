@@ -38,6 +38,9 @@ research/eval_out/figcheck/
 *.pdf
 *.pptx
 
+# ---------- Node (chỉ dùng cho cấu hình Railway IaC) ----------
+node_modules/
+
 # ---------- Gradio ----------
 .gradio/
 flagged/

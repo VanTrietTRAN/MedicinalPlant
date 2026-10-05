@@ -3,6 +3,10 @@ weights/*.safetensors
 weights/*.part
 
 # Không cần lúc chạy
+.railway/
+node_modules/
+package.json
+package-lock.json
 .git
 .gitignore
 .gitattributes

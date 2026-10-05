@@ -1,5 +1,7 @@
 # Nhận diện cây dược liệu Việt Nam (FAIR 2026)
 
+**Demo trực tuyến:** https://web-production-68ba3.up.railway.app
+
 Web demo nhận diện **206 loài cây dược liệu Việt Nam** từ ảnh, dùng ba mô hình học sâu
 ConvNeXt-Base, Swin-Base và ResNet50 (tự cài đặt, train từ đầu). Kết luận cuối cùng là
 **soft-voting** (trung bình xác suất) của ConvNeXt-Base + Swin-Base.
@@ -29,8 +31,9 @@ Số liệu từ [research/eval_out/summary_test.csv](research/eval_out/summary_
 │   └── download_weights.py# Tải/kiểm tra trọng số (dùng khi build Docker)
 ├── examples/              # Ảnh mẫu (tuỳ chọn) — app tự hiển thị
 ├── research/              # Notebook train, script đánh giá, kết quả thống kê
-├── Dockerfile, railway.json
-└── DEPLOY.md              # Kế hoạch deploy lên Railway
+├── Dockerfile
+├── .railway/railway.ts    # Cấu hình hạ tầng Railway (IaC); package.json chỉ phục vụ file này
+└── DEPLOY.md              # Hạ tầng Railway, cách cập nhật, xử lý sự cố
 ```
 
 ## Chạy trên máy

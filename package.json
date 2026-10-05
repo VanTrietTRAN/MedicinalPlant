@@ -1,0 +1,9 @@
+{
+  "name": "medicinal-plant-infra",
+  "private": true,
+  "description": "Cấu hình Railway (Infrastructure as Code) cho web demo — không phải mã ứng dụng",
+  "type": "module",
+  "devDependencies": {
+    "railway": "^3.12.0"
+  }
+}
