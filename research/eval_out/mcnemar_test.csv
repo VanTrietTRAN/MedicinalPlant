@@ -1,0 +1,4 @@
+﻿model_a,model_b,a_correct_b_wrong,a_wrong_b_correct,p_value,method,verdict
+ResNet50,ConvNeXt-Base,17,606,1.0462332900709307e-122,chi2 + continuity correction,KHÁC BIỆT có ý nghĩa thống kê (p<0.05)
+ResNet50,Swin-Base,23,557,1.5683900961344591e-108,chi2 + continuity correction,KHÁC BIỆT có ý nghĩa thống kê (p<0.05)
+ConvNeXt-Base,Swin-Base,103,48,1.1104963523261613e-05,chi2 + continuity correction,KHÁC BIỆT có ý nghĩa thống kê (p<0.05)

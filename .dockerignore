@@ -1,0 +1,21 @@
+# Trọng số được tải trong Dockerfile; file trong context có thể chỉ là con trỏ Git LFS
+weights/*.safetensors
+weights/*.part
+
+# Không cần lúc chạy
+.git
+.gitignore
+.gitattributes
+research/
+*.md
+!examples/README.md
+**/__pycache__
+**/*.py[cod]
+**/.ipynb_checkpoints
+.venv/
+venv/
+.env
+.env.*
+.vscode/
+.idea/
+.gradio/

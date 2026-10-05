@@ -1,0 +1,52 @@
+# ---------- Python ----------
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ipynb_checkpoints/
+
+# ---------- Môi trường ảo / bí mật ----------
+.venv/
+venv/
+env/
+.env
+.env.*
+
+# ---------- Checkpoint gốc (fp32, quá lớn cho git) ----------
+# Bản deploy dùng weights/*.safetensors (fp16) qua Git LFS — xem .gitattributes
+*.pth
+*.pt
+*.ckpt
+*.onnx
+*.bin
+weights/*.part
+
+# ---------- Dữ liệu & kết quả trung gian ----------
+datasets/
+dataset/
+*.zip
+*.tar
+*.tar.gz
+*.7z
+*.npz
+*.npy
+research/eval_out/figcheck/
+
+# ---------- Tài liệu bài báo / slide (không phải mã nguồn) ----------
+*.docx
+*.doc
+*.pdf
+*.pptx
+
+# ---------- Gradio ----------
+.gradio/
+flagged/
+gradio_cached_examples/
+
+# ---------- IDE / hệ điều hành ----------
+.vscode/
+.idea/
+.claude/
+.DS_Store
+Thumbs.db
+desktop.ini

@@ -1,0 +1,4 @@
+model,macro_f1,f1_strat_lo,f1_strat_hi,f1_plain_lo,f1_plain_hi,top1,top1_strat_lo,top1_strat_hi,top1_plain_lo,top1_plain_hi
+ResNet50,64.65,62.42,66.09,61.51,65.48,65.75,63.93,67.53,63.7,67.72
+Swin-Base,89.39,87.9,90.52,87.47,90.23,90.1,88.87,91.24,88.83,91.34
+ConvNeXt-Base,92.14,90.9,93.08,90.44,92.96,92.61,91.61,93.52,91.52,93.71

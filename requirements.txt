@@ -1,0 +1,9 @@
+# PyTorch nên cài bản CPU trước (nhẹ hơn ~10 lần so với bản CUDA):
+#   pip install torch==2.13.0 torchvision==0.28.0 --index-url https://download.pytorch.org/whl/cpu
+torch==2.13.0
+torchvision==0.28.0
+timm==1.0.28
+safetensors==0.7.0
+gradio==6.29.1
+httpx==0.28.1
+pillow>=11,<12

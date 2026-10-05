@@ -1,0 +1,3 @@
+﻿split,n,exact_dup_vs_train,near_dup_vs_train,near_dup_same_class,exact_pct,near_pct
+val,4022,222,264,264,5.519641969169568,6.5638985579313776
+test,2193,135,153,152,6.155950752393981,6.976744186046512

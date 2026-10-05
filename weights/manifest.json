@@ -1,0 +1,14 @@
+{
+  "convnext_base.safetensors": {
+    "sha256": "1a63e53c64630a5eba95442788e821b5beefafe4c3ee90221c40daa14033d548",
+    "size": 175589364
+  },
+  "swin_base.safetensors": {
+    "sha256": "719d6569213d9a244dc62a6a8b06e6f1b28b94e5a57c8b9c663cac1a845e9bbb",
+    "size": 173942340
+  },
+  "resnet50_custom.safetensors": {
+    "sha256": "5a2efd29a0c31ecc14957226717e05dfee02a8c84148cf3618be65a2bc9d89ec",
+    "size": 47995484
+  }
+}

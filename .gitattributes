@@ -1,0 +1,8 @@
+* text=auto
+Dockerfile text eol=lf
+*.sh text eol=lf
+
+# Trọng số mô hình (>100MB/file) lưu bằng Git LFS
+weights/*.safetensors filter=lfs diff=lfs merge=lfs -text
+
+*.ipynb linguist-documentation
