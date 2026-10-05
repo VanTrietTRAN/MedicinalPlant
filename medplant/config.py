@@ -5,6 +5,8 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 WEIGHTS_DIR = Path(os.getenv("WEIGHTS_DIR", ROOT / "weights"))
 CLASS_NAMES_PATH = ROOT / "data" / "class_names.json"
+# Tên tiếng Việt + tên khác + trang nguồn (tracuuduoclieu.vn) cho từng lớp
+VI_NAMES_PATH = ROOT / "data" / "vi_names.json"
 EXAMPLES_DIR = ROOT / "examples"
 
 IMAGENET_MEAN = (0.485, 0.456, 0.406)

@@ -1,5 +1,6 @@
 """Web demo Gradio: nhận diện 206 loài cây dược liệu Việt Nam từ ảnh."""
 import html
+import json
 import logging
 import os
 
@@ -15,10 +16,21 @@ predictor = Predictor()
 
 IMG_EXTS = {".jpg", ".jpeg", ".png", ".webp"}
 EXAMPLES = sorted(str(p) for p in config.EXAMPLES_DIR.glob("*") if p.suffix.lower() in IMG_EXTS)
+VI_NAMES = json.loads(config.VI_NAMES_PATH.read_text(encoding="utf-8"))
+
+
+def vi_name(name: str) -> str:
+    return html.escape(VI_NAMES.get(name, {}).get("vi", ""))
+
+
+def sci_name(name: str) -> str:
+    return f"<i>{html.escape(name.replace('_', ' '))}</i>"
 
 
 def species(name: str) -> str:
-    return f"<i>{html.escape(name.replace('_', ' '))}</i>"
+    """Tên Việt (đậm) + tên khoa học (nghiêng, dòng dưới)."""
+    vi = vi_name(name)
+    return f'<span class="vi">{vi}</span><span class="sci">{sci_name(name)}</span>' if vi else sci_name(name)
 
 
 def bar_color(p: float) -> str:
@@ -36,6 +48,16 @@ def topk_rows(topk, highlight_first: bool = True) -> str:
     return "".join(rows)
 
 
+def final_info(name: str) -> str:
+    info = VI_NAMES.get(name, {})
+    aka = ", ".join(html.escape(a) for a in info.get("aliases", []))
+    out = f'<div class="final-aka">Tên khác: {aka}</div>' if aka else ""
+    if info.get("source"):
+        out += (f'<a class="final-link" href="{html.escape(info["source"])}" target="_blank" '
+                f'rel="noopener">Tra cứu dược liệu ↗</a>')
+    return out
+
+
 def render(pred: Prediction) -> str:
     members = " + ".join(config.MODEL_SPECS[k]["display"] for k in pred.ensemble_members)
     best_name, best_p = pred.ensemble[0]
@@ -49,7 +71,9 @@ def render(pred: Prediction) -> str:
     <div class="mp-result">
         <div class="final">
             <div class="final-label">Kết luận (soft-voting: {members})</div>
-            <div class="final-pred">{species(best_name)}</div>
+            <div class="final-pred">{vi_name(best_name) or sci_name(best_name)}</div>
+            <div class="final-sci">{sci_name(best_name)}</div>
+            {final_info(best_name)}
             <div class="final-conf">Độ tin cậy {best_p * 100:.1f}%</div>
             <div class="final-alt">{topk_rows(pred.ensemble[1:], highlight_first=False)}</div>
         </div>

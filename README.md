@@ -25,6 +25,7 @@ Số liệu từ [research/eval_out/summary_test.csv](research/eval_out/summary_
 │   └── predictor.py       # Tiền xử lý, suy luận, soft-voting, tải ảnh từ URL
 ├── assets/style.css       # Giao diện
 ├── data/class_names.json  # 206 tên lớp (thứ tự khớp lúc train)
+├── data/vi_names.json     # Tên tiếng Việt, tên khác, trang nguồn cho 206 loài
 ├── weights/               # *.safetensors fp16 (Git LFS) + manifest.json (sha256)
 ├── scripts/
 │   ├── convert_weights.py # .pth fp32 -> .safetensors fp16
@@ -35,6 +36,14 @@ Số liệu từ [research/eval_out/summary_test.csv](research/eval_out/summary_
 ├── .railway/railway.ts    # Cấu hình hạ tầng Railway (IaC); package.json chỉ phục vụ file này
 └── DEPLOY.md              # Hạ tầng Railway, cách cập nhật, xử lý sự cố
 ```
+
+## Tên tiếng Việt
+
+App hiển thị song ngữ: tên tiếng Việt (tên chính) và tên khoa học. Tên Việt của cả 206 loài lấy từ
+[tracuuduoclieu.vn](https://tracuuduoclieu.vn) — cùng nguồn dự án đã crawl khi xây dựng bộ dữ liệu
+(`research/notebooks/crawl.ipynb`). Mỗi mục trong `data/vi_names.json` ghi URL trang nguồn, và trang đó
+đều ghi đúng tên khoa học của lớp (6 loài được ghi dưới tên đồng nghĩa, có trường `note` giải thích).
+Trên giao diện, thẻ kết luận có link **Tra cứu dược liệu** tới trang nguồn.
 
 ## Chạy trên máy
 
