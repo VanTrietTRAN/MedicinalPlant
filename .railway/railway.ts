@@ -32,7 +32,7 @@ export default defineRailway(() => {
       restartPolicyMaxRetries: 5,
     },
     healthcheck: "/",
-    healthcheckTimeout: 300, // nạp 3 mô hình + warm-up (~45s trên Railway)
+    healthcheckTimeout: 300, // dư cho nạp 3 mô hình + warm-up (thực tế ~3s)
     env: {
       PORT: "8080", // cố định để khớp cổng đích của domain bên dưới
     },

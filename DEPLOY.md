@@ -39,9 +39,11 @@ lên file thật đã tải.
 
 ## 2. Số liệu thực tế trên Railway
 
-- Khởi động: nạp 3 mô hình ~20s, warm-up + Gradio sẵn sàng sau ~45s.
-- RAM: ~1,4GB với 3 mô hình. Gói Pro dư sức chứa.
-- Suy luận: ~0,5s/ảnh trên CPU 12 luồng của máy local; trên Railway xem mục "Thời gian suy luận" ngay dưới kết quả.
+Đo ngày 05/10/2026, region Singapore:
+- Khởi động container: nạp 3 mô hình 2,5s, sẵn sàng phục vụ sau ~3s.
+- Suy luận cả 3 mô hình: ~340ms/ảnh. Một lượt dự đoán trên trình duyệt (gồm upload): ~2s.
+- Tải trang: ~0,9s. RAM: ~1,4GB với 3 mô hình, gói Pro dư sức chứa.
+- Đã test end-to-end trên domain công khai: dán link ảnh, tải ảnh lên (giao diện mobile), bấm dự đoán khi chưa có ảnh.
 
 ## 3. Cập nhật bản demo
 
@@ -94,7 +96,7 @@ Cài một lần: `npm i -g @railway/cli`, `npm install` (trong repo), `railway 
 
 Gói Pro tính theo RAM/CPU dùng thực tế; service chạy liên tục với ~1,4GB RAM. Ngoài thời gian demo có thể:
 - Bật **App Sleeping** (đặt `sleepApplication: true` trong `deploy` của `.railway/railway.ts` → `railway config apply`):
-  service ngủ khi không có truy cập, lần mở đầu tiên chờ ~45–60s.
+  service ngủ khi không có truy cập; lần mở đầu tiên phải chờ container khởi động lại (vài giây đến ~1 phút).
 - Hoặc tạm gỡ bằng `railway down`, khi cần thì `railway redeploy`.
 
 ## 7. Checklist trước buổi demo
